@@ -21,7 +21,8 @@ def curve_bootstrapper(coupon_bonds: tuple, yield_curve: dict) -> float:
     maturity, coupon_rate, price = coupon_bonds
 
     if(maturity<=0.5):
-        zero_rate = -((math.log(price/100))/maturity)
+        coupon = 100 * (coupon_rate / 2)
+        zero_rate = -math.log(price / (100 + coupon)) / maturity
         return zero_rate
 
     if(maturity>0.5):
@@ -29,16 +30,58 @@ def curve_bootstrapper(coupon_bonds: tuple, yield_curve: dict) -> float:
         pv_coupons = 0
         time=0.5
         while time<maturity:
-            discount_rate = yield_curve[time]
+            discount_rate = get_rate(time, yield_curve)
             pv_coupons += coupon*(math.exp(-discount_rate*time))
             time+=0.5
         zero_rate = -math.log((price-pv_coupons)/(100+coupon))/maturity
         return zero_rate
+
+def get_rate(target_time, yield_curve):
+    if target_time in yield_curve:
+        return yield_curve[target_time]
+    known_times = list(yield_curve.keys())
+    smaller_times = [t for t in known_times if t < target_time]
+    if not smaller_times:
+        raise ValueError(f"Cannot interpolate: Target time {target_time} is lower than our shortest bond.")
+    time_1 = max(smaller_times)
+    rate_1 = yield_curve[time_1]
+    larger_times = [t for t in known_times if t > target_time]
+    if not larger_times:
+        raise ValueError(f"Cannot interpolate: Target time {target_time} is beyond our longest bond.")
+    time_2 = min(larger_times)
+    rate_2 = yield_curve[time_2]
+    slope = (rate_2 - rate_1) / (time_2 - time_1)
+    interpolated_rate = rate_1 + (target_time - time_1) * slope
+    return interpolated_rate
+
+def build_complete_par_curve(sparse_par_rates):
+    max_maturity = max(sparse_par_rates.keys())
+    complete_curve = {} 
+    current_time = 0.5
+    while current_time <= max_maturity:
+        current_time = round(current_time, 1) 
+        if current_time in sparse_par_rates:
+            complete_curve[current_time] = sparse_par_rates[current_time]
+        else:
+            complete_curve[current_time] = get_rate(current_time, sparse_par_rates)
+        current_time += 0.5
+    return complete_curve
                     
 
 if __name__ == "__main__":
     print("---Yield Curve Bootstrapper---")
-    coupon_bonds = [(0.25,0,97.50),(0.5,0,94.90),(1,0.08,96),(1.5,0.12,101.60),(2,0.15,102.40)]
+    raw_par_rates = {
+        0.5: 0.0515, 
+        1.0: 0.0490, 
+        2.0: 0.0460, 
+        5.0: 0.0425
+    }
+
+    complete_par_rates = build_complete_par_curve(raw_par_rates)
+
+    coupon_bonds = []
+    for maturity in sorted(complete_par_rates.keys()):
+        coupon_bonds.append((maturity, complete_par_rates[maturity], 100))
 
     yield_curve = {}
     
