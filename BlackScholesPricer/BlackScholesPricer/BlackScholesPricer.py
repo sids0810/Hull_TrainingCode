@@ -7,7 +7,7 @@ import math
 
 def calculate_prices(spot, strike, rfr, div, time, vol):
 
-    d1 = ((math.log(spot/strike))+(rfr - div + ((vol**2/2)*time)))/(vol*math.sqrt(time))
+    d1 = (math.log(spot/strike) + (rfr - div + (vol**2)/2) * time) / (vol * math.sqrt(time))
 
     d2 = d1 - (vol*math.sqrt(time))
 
@@ -19,12 +19,12 @@ def calculate_prices(spot, strike, rfr, div, time, vol):
 
 if __name__ == "__main__":
 
-    spot_price = 100.0
-    strike_price = 100.0
-    risk_free_rate = 0.05
+    spot_price = 32
+    strike_price = 35
+    risk_free_rate = 0.03
     continuous_yield = 0.0
-    time_to_maturity = 1
-    volatility = 0.20
+    time_to_maturity = 1/12
+    volatility = 0.4
 
     call, put = calculate_prices(spot_price, strike_price, risk_free_rate, continuous_yield, time_to_maturity, volatility)
 

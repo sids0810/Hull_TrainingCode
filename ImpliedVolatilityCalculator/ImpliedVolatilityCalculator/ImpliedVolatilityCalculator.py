@@ -7,7 +7,7 @@ import scipy.stats as sci
 
 def calculate_call_price(spot, strike, rfr, div, time, vol):
 
-    d1 = ((math.log(spot/strike))+(rfr - div + ((vol**2/2)*time)))/(vol*math.sqrt(time))
+    d1 = (math.log(spot/strike) + (rfr - div + (vol**2)/2) * time) / (vol * math.sqrt(time))
 
     d2 = d1 - (vol*math.sqrt(time))
 
@@ -17,7 +17,7 @@ def calculate_call_price(spot, strike, rfr, div, time, vol):
 
 def calculate_put_price(spot, strike, rfr, div, time, vol):
 
-    d1 = ((math.log(spot/strike))+(rfr - div + ((vol**2/2)*time)))/(vol*math.sqrt(time))
+    d1 = ((math.log(spot/strike))+(rfr - div + ((vol**2/2))*time))/(vol*math.sqrt(time))
 
     d2 = d1 - (vol*math.sqrt(time))
 
