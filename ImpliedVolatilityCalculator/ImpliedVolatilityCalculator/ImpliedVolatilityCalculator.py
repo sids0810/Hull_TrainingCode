@@ -51,12 +51,12 @@ def implied_vol_calc(spot, strike, rfr, div, time, option_type, market_price, vo
             diff = put_price - market_price
             if(vega<1e-8):
                 vega = 1e-8
-            step = diff/vega
-            if(step>0.5):
-                step = 0.5
-            if(step<-0.5):
-                step = -0.5
-            vol_guess = vol_guess - step
+            adj = diff/vega
+            if(adj>0.5):
+                adj = 0.5
+            if(adj<-0.5):
+                adj = -0.5
+            vol_guess = vol_guess - adj
             if(vol_guess<=0):
                 vol_guess = 0.0001
             put_price = calculate_put_price(spot, strike, rfr, div, time, vol_guess)
